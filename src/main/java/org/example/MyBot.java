@@ -14,43 +14,42 @@ public class MyBot extends TelegramLongPollingBot {
        var chatId=update.getMessage().getChatId();
        String text = update.getMessage().getText();
        try {
-       var message = new SendMessage();
-       message.setChatId(chatId);
-       var priceBtc= CryptoPrice.spotPrice("BTC");
-       var priceEth= CryptoPrice.spotPrice("ETH");
-       var priceDoge= CryptoPrice.spotPrice("DOGE");
 
        String[]words=text.split(",");
        String str="";
+
        if(text.equals("/start")){
-           message.setText("HALLO");
+           sendMessage(chatId,"HALLO");
        } else if (text.equals("/all")){
-           message.setText("BTC price: "+priceBtc.getAmount().doubleValue()+"\n"+
-                   "ETH price: "+priceEth.getAmount().doubleValue()+"\n"+
-                   "Doge price: "+priceDoge.getAmount().doubleValue());
-       }else {
-           int unknown=0;
+           sendPrice(chatId, "BTC");
+           sendPrice(chatId, "ETH");
+           sendPrice(chatId, "DOGE");
+       } else {
            for (int i = 0; i < words.length; i++) {
                if (words[i].equals("btc")){
-                   str=str+"BTC price: "+priceBtc.getAmount().doubleValue()+"\n";
+                   sendPrice(chatId, "BTC");
                }else if(words[i].equals("eth")){
-                   str=str+"ETH price: "+priceEth.getAmount().doubleValue()+"\n";
+                   sendPrice(chatId, "ETH");
                }else if(words[i].equals("doge")){
-                   str=str+"DOGE price: "+priceDoge.getAmount().doubleValue()+"\n";
-               }else {unknown=1;}
-
+                   sendPrice(chatId, "DOGE");
+               }else sendMessage(chatId, "Unknown command!");
            }
-           if (unknown==1){message.setText("Unknown command");}
-           else {message.setText(str);}
        }
-
-
-
-
-       execute(message);
-        } catch (Exception e) {
+     } catch (Exception e) {
             System.out.println("Error!");
         }
+    }
+    void sendPrice(long chatId, String name) throws Exception {
+        var price = CryptoPrice.spotPrice(name);
+        sendMessage(chatId, name + " price: " + price.getAmount().doubleValue());
+    }
+
+
+    void sendMessage(long chatId, String text) throws Exception {
+        var message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(text);
+        execute(message);
     }
 
     @Override
